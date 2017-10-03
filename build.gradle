@@ -1,0 +1,34 @@
+buildscript {
+  ext.kotlin_version = '1.1.51'
+
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+  }
+}
+
+group 'org.jonnyzzz'
+
+if (rootProject.properties.containsKey('version')) {
+  version = rootProject.properties['version']
+} else if (rootProject.hasProperty('teamcity')) {
+  version = rootProject['teamcity']['build.number']
+} else {
+  version = '1.0-SNAPSHOT'
+}
+
+subprojects {
+  version = rootProject.version
+}
+
+
+apply from: 'build-kotlin.gradle'
+
+
+task noop() {
+  
+}
+

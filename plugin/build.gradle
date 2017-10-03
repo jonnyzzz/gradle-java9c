@@ -1,0 +1,5 @@
+dependencies {
+  compile gradleApi()
+
+  testCompile gradleTestKit()
+}
