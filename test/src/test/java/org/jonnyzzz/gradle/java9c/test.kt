@@ -59,7 +59,6 @@ class IntegrationTest {
             .build()
   }
 
-       /*
   @Test
   fun test_java_clash_sources() {
     toProject {
@@ -82,7 +81,6 @@ class IntegrationTest {
 
       -"allprojects { apply plugin: 'java' } "
       -"dependencies { compile project(':a'), project(':b') }"
-    }.withArguments("java9c", "--debug").withDebug(true).forwardOutput().build()
+    }.withArguments("java9c").forwardOutput().build()
   }
-*/
 }
