@@ -11,7 +11,7 @@ interface FileBuilder {
 
 interface GradleBuilder : FileBuilder
 
-private fun fileWriter(dir: File, name: String, builder: FileBuilder.() -> Unit) {
+fun fileWriter(dir: File, name: String, builder: FileBuilder.() -> Unit) {
   val text = buildString {
 
     object : FileBuilder {
