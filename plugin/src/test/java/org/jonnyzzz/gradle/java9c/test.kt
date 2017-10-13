@@ -2,21 +2,37 @@ package org.jonnyzzz.gradle.java9c
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
 
 class PluginTest {
-  lateinit var project : Project
+  @Rule
+  @JvmField
+  val temp = TemporaryFolder()
+  
+  private fun project(builder: GradleBuilder.() -> Unit = {}): Project {
+    val projectDir = temp.newFolder()
 
-  @Before
-  fun setup() {
-    project = ProjectBuilder.builder().build()
-    project.plugins.apply("org.jonnyzzz.gradle.java9c")
+    fileWriter(projectDir, "build.gradle") {
+      -""
+      -"println(System.getProperty(\"java.version\"))\n "
+      -""
+
+      object : GradleBuilder, FileBuilder by this {}.builder()
+    }
+
+    return ProjectBuilder.builder()
+            .withProjectDir(projectDir)
+            .build()
+            .also {
+              it.pluginManager.apply(GradlePlugin::class.java)
+            }
   }
 
   @Test
-  fun empty() {
-    
+  fun hasTask() {
+    project().tasks.getByName("java9c")
   }
 }
