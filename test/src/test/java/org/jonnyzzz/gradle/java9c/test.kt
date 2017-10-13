@@ -20,29 +20,30 @@ class IntegrationTest {
   @JvmField
   val temp = TemporaryFolder()
 
-  fun toProject(builder: GradleBuilder.() -> Unit): GradleRunner {
+  fun toProject(builder: BuildGradleWriter.() -> Unit): GradleRunner {
     val projectDir = temp.newFolder()
 
-    fileWriter(projectDir, "build.gradle") {
-      -"buildscript {"
-      -"  repositories {"
-      -"    mavenLocal() "
-      -"    mavenCentral() "
-      -"  }"
-      -""
-      -"  dependencies {"
-      -"    classpath '$pluginArtifact'"
-      -"  }"
-      -""
-      -"}"
-      -""
-      -""
-      -"println(System.getProperty(\"java.version\"))\n "
-      -"apply plugin: 'org.jonnyzzz.java9c'"
-      -""
-      -""
+    fileWriter(projectDir) {
+      val fw = this
+      gradle("build.gradle") {
+        buildScript {
+          repositories {
+            mavenCentral()
+            mavenLocal()
+          }
 
-      object : GradleBuilder, FileBuilder by this {}.builder()
+          dependencies {
+            classpath(DependencyKind.Text(pluginArtifact))
+          }
+        }
+        -""
+        -"println(System.getProperty(\"java.version\"))\n "
+        `apply plugin`("org.jonnyzzz.java9c")
+        -""
+        -""
+
+        object : BuildGradleWriter, FileBuilder by fw, GradleWriter by this {}.builder()
+      }
     }
 
     return GradleRunner.create()
@@ -79,8 +80,15 @@ class IntegrationTest {
         -"class Y"
       }
 
-      -"allprojects { apply plugin: 'java' } "
-      -"dependencies { compile project(':a'), project(':b') }"
+
+      allprojects {
+        `apply plugin`("java")
+      }
+
+      dependencies {
+        compile(project(":a") )
+        compile(project(":b") )
+      }
     }.withArguments("java9c").forwardOutput().build()
   }
 }

@@ -12,15 +12,19 @@ class PluginTest {
   @JvmField
   val temp = TemporaryFolder()
   
-  private fun project(builder: GradleBuilder.() -> Unit = {}): Project {
+  private fun project(builder: BuildGradleWriter.() -> Unit): Project {
     val projectDir = temp.newFolder()
 
-    fileWriter(projectDir, "build.gradle") {
-      -""
-      -"println(System.getProperty(\"java.version\"))\n "
-      -""
+    fileWriter(projectDir) {
+      val fw = this
 
-      object : GradleBuilder, FileBuilder by this {}.builder()
+      gradle("build.gradle") {
+        -""
+        -"println(System.getProperty(\"java.version\"))\n "
+        -""
+
+        object : BuildGradleWriter, FileBuilder by fw, GradleWriter by this {}.builder()
+      }
     }
 
     return ProjectBuilder.builder()
@@ -33,6 +37,6 @@ class PluginTest {
 
   @Test
   fun hasTask() {
-    project().tasks.getByName("java9c")
+    project{}.tasks.getByName("java9c")
   }
 }
