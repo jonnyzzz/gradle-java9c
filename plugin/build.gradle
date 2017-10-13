@@ -20,7 +20,14 @@ publishing {
   }
 }
 
+project.tasks.publishToMavenLocal.dependsOn project.tasks.jar
 project.tasks.publishToMavenLocal.dependsOn project.tasks.classes
 project.tasks.publishToMavenLocal.dependsOn project.tasks.compileKotlin
+
+project.tasks.classes.dependsOn project.tasks.compileKotlin
+
 project.tasks.jar.dependsOn project.tasks.compileKotlin
+project.tasks.jar.dependsOn project.tasks.classes
+project.tasks.jar.inputs.dir('src')
+
 project.tasks.publishToMavenLocal.inputs.dir('src')
