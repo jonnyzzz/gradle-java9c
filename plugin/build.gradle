@@ -15,7 +15,12 @@ publishing {
       artifactId 'java9c'
       version rootProject.version
 
-      from components.java
+      artifact jar
     }
   }
 }
+
+project.tasks.publishToMavenLocal.dependsOn project.tasks.classes
+project.tasks.publishToMavenLocal.dependsOn project.tasks.compileKotlin
+project.tasks.jar.dependsOn project.tasks.compileKotlin
+project.tasks.publishToMavenLocal.inputs.dir('src')
