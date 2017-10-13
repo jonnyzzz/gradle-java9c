@@ -1,18 +1,10 @@
-configurations {
-  plugin
-}
 
 dependencies {
   testCompile gradleTestKit()
-
-  plugin project(path: ':plugin', configuration: 'archives')
 }
 
-test.dependsOn configurations.plugin
 test.dependsOn project(':plugin').tasks.publishToMavenLocal
 
 test.doFirst {
-  test.systemProperty "jonnyzzz-plugin-classpath", configurations.plugin.asPath
-  test.systemProperty "jonnyzzz-plugin-dependency", "${rootProject.group}:java9c"
-  test.systemProperty "jonnyzzz-plugin-version", rootProject.version
+  test.systemProperty "jonnyzzz-plugin-artifact", "${rootProject.group}:java9c:${rootProject.version}"
 }

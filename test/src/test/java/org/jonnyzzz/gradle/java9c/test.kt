@@ -4,24 +4,16 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.File
 
 
 class IntegrationTest {
 
   val gradleVersion = "4.2.1"
 
-  private val pluginVersion by lazy {
-    val v = System.getProperty("jonnyzzz-plugin-version") ?: error("Failed to get version. Are you running via Gradle test task?")
+  private val pluginArtifact by lazy {
+    val v = System.getProperty("jonnyzzz-plugin-artifact") ?: error("Failed to get version. Are you running via Gradle test task?")
     println("Plugin version: $v")
     v
-  }
-
-  private val pluginClasspath by lazy {
-    val cp = System.getProperty("jonnyzzz-plugin-classpath") ?: error("Failed to get classpath. Are you running via Gradle test task?")
-    cp.split(File.pathSeparatorChar).map { File(it) }.also {
-      println("Plugin classpath: $it")
-    }
   }
 
   @Rule
@@ -39,7 +31,7 @@ class IntegrationTest {
       -"  }"
       -""
       -"  dependencies {"
-      -"    classpath 'org.jonnyzzz:java9c:$pluginVersion'"
+      -"    classpath '$pluginArtifact'"
       -"  }"
       -""
       -"}"
