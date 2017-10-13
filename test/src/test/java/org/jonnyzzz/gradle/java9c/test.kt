@@ -35,10 +35,12 @@ class IntegrationTest {
       -"  }"
       -""
       -"}"
+      -""
+      -""
       -"println(System.getProperty(\"java.version\"))\n "
       -"apply plugin: 'org.jonnyzzz.java9c'"
       -""
-
+      -""
 
       object : GradleBuilder, FileBuilder by this {}.builder()
     }
