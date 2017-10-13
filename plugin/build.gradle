@@ -6,3 +6,15 @@ dependencies {
 
   testCompile gradleTestKit()
 }
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      groupId rootProject.group
+      artifactId 'java9c'
+      version rootProject.version
+
+      from components.java
+    }
+  }
+}

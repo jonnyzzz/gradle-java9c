@@ -1,5 +1,6 @@
 rootProject.name = 'gradle-java9-collision'
 
 include 'plugin'
+include 'test'
 
 

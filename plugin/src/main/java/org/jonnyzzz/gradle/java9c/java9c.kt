@@ -17,7 +17,7 @@ open class GradlePlugin : Plugin<Project> {
 
     project.afterEvaluate {
 //      TODO: include all source sets here?
-      task.dependsOn(project.tasks.getByName("classes"))
+//      task.dependsOn(project.tasks.getByName("classes"))
     }
   }
 }

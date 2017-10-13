@@ -12,8 +12,8 @@ buildscript {
 
 group 'org.jonnyzzz'
 
-if (rootProject.properties.containsKey('version')) {
-  version = rootProject.properties['version']
+if (rootProject.properties.containsKey('jonnyzzz-version')) {
+  version = rootProject.properties['jonnyzzz-version']
 } else if (rootProject.hasProperty('teamcity')) {
   version = rootProject['teamcity']['build.number']
 } else {
@@ -24,6 +24,7 @@ subprojects {
   version = rootProject.version
 }
 
+println "Project version: $version"
 
 apply from: 'build-kotlin.gradle'
 
