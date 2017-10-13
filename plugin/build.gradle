@@ -5,6 +5,7 @@ dependencies {
   compile gradleApi()
 
   testCompile gradleTestKit()
+  testCompile project(':test-common')
 }
 
 publishing {

@@ -1,6 +1,7 @@
 
 dependencies {
   testCompile gradleTestKit()
+  testCompile project(':test-common')
 }
 
 test.dependsOn project(':plugin').tasks.publishToMavenLocal
