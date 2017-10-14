@@ -42,11 +42,19 @@ open class ScanClasspathTask : DefaultTask() {
     val fileSet: FileCollection = classpath() ?: return
     println("classpath: " + fileSet.toSet())
 
-    fileSet.toSet().map {
-      it to (listAppPackagesFromFile(it) + listAppPackagesFromJar(it))
-    }.map {
-      println("Tree: ${it.first} -> ${it.second}")
-    }
+    val packagesToEntries =
+            fileSet.toSet()
+                    .flatMap { file ->
+                      (listAppPackagesFromFile(file) + listAppPackagesFromJar(file)).map { it to file }
+                    }
+                    .groupBy(keySelector = { it.first }, valueTransform = { it.second })
+                    .filter { it.value.size > 1 }
+
+
+    packagesToEntries
+            .forEach {
+              println("Conflicts: ${it.key} -> ${it.value}")
+            }
   }
 
   private fun listAppPackagesFromFile(root: File): Set<String> {
