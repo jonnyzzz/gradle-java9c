@@ -3,6 +3,8 @@ apply plugin: 'maven-publish'
 
 configurations {
   maven_local
+
+  junit
 }
 
 dependencies {
@@ -10,6 +12,8 @@ dependencies {
 
   testCompile gradleTestKit()
   testCompile project(':test-common')
+
+  junit 'junit:junit:4.12'
 }
 
 publishing {
@@ -22,6 +26,11 @@ publishing {
       artifact jar
     }
   }
+}
+
+test.dependsOn configurations.junit
+test.doFirst {
+  systemProperty("jonnyzzz_junit_jar", configurations.junit.asPath)
 }
 
 final File mock = file("$buildDir/artifact-marker")
