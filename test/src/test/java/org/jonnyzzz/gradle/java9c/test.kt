@@ -143,7 +143,7 @@ class IntegrationTest {
       dependencies {
         compile(Text("junit:junit:4.12"))
       }
-    }.withArguments("java9c", "--stacktrace").forwardOutput().build()
+    }.withArguments("java9c", "--stacktrace", "--info").forwardOutput().build()
   }
 
   @Test
