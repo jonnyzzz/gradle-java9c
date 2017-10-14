@@ -68,16 +68,16 @@ class IntegrationTest {
         -"include 'b'"
       }
 
-      fileWriter("a/src/main/java/org/foo/x.kt") {
-        -"package org.foo"
+      fileWriter("a/src/main/java/org/foo/X.java") {
+        -"package org.foo;"
         -""
-        -"class X"
+        -"class X {}"
       }
 
-      fileWriter("b/src/main/java/org/foo/y.kt") {
-        -"package org.foo"
+      fileWriter("b/src/main/java/org/foo/Y.java") {
+        -"package org.foo;"
         -""
-        -"class Y"
+        -"class Y {}"
       }
 
 
@@ -89,6 +89,6 @@ class IntegrationTest {
         compile(project(":a") )
         compile(project(":b") )
       }
-    }.withArguments("java9c").forwardOutput().build()
+    }.withArguments("java9c", "--stacktrace").forwardOutput().build()
   }
 }
