@@ -23,7 +23,7 @@ publishing {
       artifactId 'java9c'
       version rootProject.version
 
-      artifact jar
+      from components.java
     }
   }
 }
