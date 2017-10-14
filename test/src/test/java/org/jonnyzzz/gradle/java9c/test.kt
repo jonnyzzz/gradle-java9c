@@ -1,6 +1,7 @@
 package org.jonnyzzz.gradle.java9c
 
 import org.gradle.testkit.runner.GradleRunner
+import org.jonnyzzz.gradle.java9c.DependencyKind.Text
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -33,7 +34,7 @@ class IntegrationTest {
           }
 
           dependencies {
-            classpath(DependencyKind.Text(pluginArtifact))
+            classpath(Text(pluginArtifact))
           }
         }
         -""
@@ -88,6 +89,59 @@ class IntegrationTest {
       dependencies {
         compile(project(":a") )
         compile(project(":b") )
+      }
+    }.withArguments("java9c", "--stacktrace").forwardOutput().build()
+  }
+
+  @Test
+  fun test_javalibrary_clash_sources() {
+    toProject {
+      fileWriter("settings.gradle") {
+        -"include 'a'"
+        -"include 'b'"
+      }
+
+      fileWriter("a/src/main/java/org/foo/X.java") {
+        -"package org.foo;"
+        -""
+        -"class X {}"
+      }
+
+      fileWriter("b/src/main/java/org/foo/Y.java") {
+        -"package org.foo;"
+        -""
+        -"class Y {}"
+      }
+
+
+      allprojects {
+        `apply plugin`("java-library")
+      }
+
+      dependencies {
+        api(project(":a") )
+        implementation(project(":b") )
+      }
+    }.withArguments("java9c", "--stacktrace").forwardOutput().build()
+  }
+
+  @Test
+  fun test_javalibrary_clash_sources_lib() {
+    toProject {
+      fileWriter("src/main/java/org/junit/X.java") {
+        -"package org.junit;"
+        -""
+        -"class X {}"
+      }
+
+      `apply plugin`("java-library")
+
+      repositories {
+        mavenCentral()
+      }
+
+      dependencies {
+        implementation(Text("junit:junit:4.12"))
       }
     }.withArguments("java9c", "--stacktrace").forwardOutput().build()
   }
