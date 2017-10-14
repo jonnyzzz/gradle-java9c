@@ -63,7 +63,6 @@ open class ScanClasspathTask : DefaultTask() {
     }
 
     val problems = packagesToEntries.filter { it.value.size > 1 }.toSortedMap()
-
     if (problems.isEmpty()) {
       logger.debug("All packages usages are unique. No problems detected")
       return
@@ -78,6 +77,8 @@ open class ScanClasspathTask : DefaultTask() {
       logger.error("  ")
     }
     logger.error("  ")
+
+    //TODO: what is the best way to report error?
     throw Exception("Package collisions were detected")
   }
 }
