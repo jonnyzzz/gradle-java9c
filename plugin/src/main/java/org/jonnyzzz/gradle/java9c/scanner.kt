@@ -52,7 +52,7 @@ fun scanPackages(project: Project,
             //TODO: resolve entries to human readable things
             val entry =
                     if (file.absolutePath.startsWith(projectBuildDir.absolutePath)) {
-                      ClasspathEntry("project: ${project.parent}")
+                      ClasspathEntry("project: ${project.path}")
                     } else {
                       ClasspathEntry(file.path)
                     }
