@@ -54,7 +54,8 @@ if (!"${rootProject.version}".toLowerCase().contains("SNAPSHOT".toLowerCase())) 
   pluginBundle {
     website = 'https://jonnyzzz.com'
     vcsUrl = 'https://github.com/jonnyzzz/gradle-java9c'
-    description = 'Checks runtime classpaths to detect same packages used in different classpath entries. Detects possible Java 9 modules migration problems'
+    description = 'Checks runtime classpaths to detect same packages used in different classpath entries. ' +
+            'Detects Java 9 modules migration problems aka split packages'
     tags = ['java9', 'jigsaw', 'split packages', 'package', 'module']
 
     plugins {
