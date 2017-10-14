@@ -1,5 +1,7 @@
 package org.jonnyzzz.gradle.java9c
 
+import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
 import java.io.File
 import java.nio.file.Files
 import java.util.jar.JarFile
@@ -9,7 +11,7 @@ data class Package(val name : String) : Comparable<Package> {
   override fun compareTo(other: Package) = this.name.compareTo(other.name)
 }
 
-data class ClasspathEntry(val name : String) : Comparable<Package> {
+data class ClasspathEntry(val name: String) : Comparable<Package> {
   override fun compareTo(other: Package) = this.name.compareTo(other.name)
 }
 
@@ -38,4 +40,24 @@ fun listAppPackagesFromJar(root: File): Set<Package> {
             .map { Package(it) }
             .toSortedSet()
   }
+}
+
+fun scanPackages(project: Project,
+                 fileSet: FileCollection): Map<Package, List<ClasspathEntry>> {
+
+  val projectBuildDir = project.buildDir
+  return fileSet.toSet()
+          .flatMap { file ->
+
+            //TODO: resolve entries to human readable things
+            val entry =
+                    if (file.absolutePath.startsWith(projectBuildDir.absolutePath)) {
+                      ClasspathEntry("project: ${project.parent}")
+                    } else {
+                      ClasspathEntry(file.path)
+                    }
+
+            (listAppPackagesFromFile(file) + listAppPackagesFromJar(file)).map { it to entry }
+          }
+          .groupBy(keySelector = { it.first }, valueTransform = { it.second })
 }

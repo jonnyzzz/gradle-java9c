@@ -6,8 +6,14 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
+
+open class Java9cSettings {
+
+}
 
 open class GradlePlugin : Plugin<Project> {
 
@@ -15,40 +21,63 @@ open class GradlePlugin : Plugin<Project> {
     //explicitly include 'java' plugin
     project.plugins.apply(JavaBasePlugin::class.java)
 
-    val task = project.tasks.maybeCreate("java9c", DefaultTask::class.java)
+    val ext = project.extensions.create("java9c", Java9cSettings::class.java)
+    val rootTask = project.tasks.create("java9c")
 
     project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.all { set ->
-      val scanTask = project.tasks.maybeCreate("java9c_${set.name}", ScanClasspathTask::class.java)
+      project.tasks.create("java9c_${set.name}", ScanClasspathTask::class.java) { scanTask ->
+        scanTask.classpath = { set.runtimeClasspath }
+        scanTask.dependsOn(project.tasks.getByName(set.classesTaskName))
+        scanTask.ext = ext
 
-      scanTask.classpath = { set.runtimeClasspath }
-      scanTask.dependsOn(project.tasks.getByName(set.classesTaskName))
-
-      task.dependsOn(scanTask)
+        rootTask.dependsOn(scanTask)
+      }
     }
   }
 }
 
 open class ScanClasspathTask : DefaultTask() {
+  @Internal
+  @InputFiles
   lateinit var classpath: () -> FileCollection?
+
+  @Internal
+  lateinit var ext: Java9cSettings
 
   @TaskAction
   open fun `execute java9c task`() {
-    val fileSet: FileCollection = classpath() ?: return
-    println("classpath: " + fileSet.toSet())
+    val fileSet = classpath()
 
-    val packagesToEntries =
-            fileSet.toSet()
-                    .flatMap { file ->
-                      (listAppPackagesFromFile(file) + listAppPackagesFromJar(file)).map { it to file }
-                    }
-                    .groupBy(keySelector = { it.first }, valueTransform = { it.second })
-                    .filter { it.value.size > 1 }
+    if (fileSet == null) {
+      logger.debug("Fileset is `null`. Skipping task execution")
+      return
+    }
 
+    val packagesToEntries = scanPackages(project, fileSet)
+    if (logger.isDebugEnabled) {
+      packagesToEntries.toSortedMap().forEach { (k,vs) ->
+        vs.forEach { v ->
+          logger.debug("${k.name} -> ${v.name}")
+        }
+      }
+    }
 
-    packagesToEntries
-            .forEach {
-              println("Conflicts: ${it.key} -> ${it.value}")
-            }
+    val problems = packagesToEntries.filter { it.value.size > 1 }.toSortedMap()
+
+    if (problems.isEmpty()) {
+      logger.debug("All packages usages are unique. No problems detected")
+      return
+    }
+
+    logger.error("The following packages are defined in several modules:")
+    for ((k,vs) in problems) {
+      logger.error("Package: ${k.name} is declared in")
+      for (v in vs) {
+        logger.error("  module: ${v.name}")
+      }
+      logger.error("  ")
+    }
+    logger.error("  ")
+    throw Exception("Package collisions were detected")
   }
-
 }
