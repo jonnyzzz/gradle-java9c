@@ -10,6 +10,10 @@ buildscript {
   }
 }
 
+plugins {
+  id "com.gradle.plugin-publish" version "0.9.8" apply false
+}
+
 group 'org.jonnyzzz'
 
 if (rootProject.properties.containsKey('jonnyzzz-version')) {
