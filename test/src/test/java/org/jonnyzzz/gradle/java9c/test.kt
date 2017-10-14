@@ -126,6 +126,27 @@ class IntegrationTest {
   }
 
   @Test
+  fun test_java_clash_sources_lib() {
+    toProject {
+      fileWriter("src/main/java/org/junit/X.java") {
+        -"package org.junit;"
+        -""
+        -"class X {}"
+      }
+
+      `apply plugin`("java")
+
+      repositories {
+        mavenCentral()
+      }
+
+      dependencies {
+        compile(Text("junit:junit:4.12"))
+      }
+    }.withArguments("java9c", "--stacktrace").forwardOutput().build()
+  }
+
+  @Test
   fun test_javalibrary_clash_sources_lib() {
     toProject {
       fileWriter("src/main/java/org/junit/X.java") {
