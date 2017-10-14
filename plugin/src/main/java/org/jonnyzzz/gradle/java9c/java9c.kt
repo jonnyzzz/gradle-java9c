@@ -21,7 +21,7 @@ open class GradlePlugin : Plugin<Project> {
       val scanTask = project.tasks.maybeCreate("java9c_${set.name}", ScanClasspathTask::class.java)
 
       scanTask.classpath = { set.runtimeClasspath }
-      scanTask.dependsOn(project.configurations.getByName(set.runtimeClasspathConfigurationName))
+      scanTask.dependsOn(project.tasks.getByName(set.classesTaskName))
 
       task.dependsOn(scanTask)
     }
@@ -33,8 +33,6 @@ open class ScanClasspathTask : DefaultTask() {
 
   @TaskAction
   open fun `execute java9c task`() {
-    println("project: " + project.name)
-
     val fileSet: FileCollection = classpath() ?: return
     println("classpath: " + fileSet.toSet())
 
