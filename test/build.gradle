@@ -1,10 +1,15 @@
+configurations {
+  plugin
+}
 
 dependencies {
   testCompile gradleTestKit()
   testCompile project(':test-common')
+
+  plugin project(path: ':plugin', configuration: 'maven_local')
 }
 
-test.dependsOn project(':plugin').tasks.publishToMavenLocal
+test.dependsOn configurations.plugin
 
 test.doFirst {
   test.systemProperty "jonnyzzz-plugin-artifact", "${rootProject.group}:java9c:${rootProject.version}"
