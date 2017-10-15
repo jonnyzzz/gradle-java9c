@@ -61,9 +61,10 @@ open class ScanClasspathTask : DefaultTask() {
       return
     }
 
+    logger.error("  ")
     logger.error("The following packages are defined in several modules:")
     for ((k,vs) in problems) {
-      logger.error("Package: ${k.name} is declared in")
+      logger.error("Package ${k.name} is declared in")
       for (v in vs) {
         logger.error("  - ${v.name}")
       }
