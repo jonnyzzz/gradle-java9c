@@ -1,5 +1,5 @@
 plugins {
- id 'org.jonnyzzz.java9c' version '0.1'
+ id 'org.jonnyzzz.java9c' version '0.2'
 }
 
 apply plugin: 'java'
