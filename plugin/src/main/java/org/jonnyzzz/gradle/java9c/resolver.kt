@@ -49,7 +49,7 @@ class ResolverContext(
         val project: Project,
         val sourceSet: SourceSet
 ) {
-  private val allEntries = TreeSet(fileSet.toSet())
+  private val allEntries = TreeSet(fileSet.toSet().filter { it.exists() })
   private val resolvedEntries = TreeMap<File, ClasspathEntry>()
 
   val rootProject : Project
