@@ -1,7 +1,6 @@
 package org.jonnyzzz.gradle.java9c
 
 import org.gradle.testkit.runner.GradleRunner
-import org.jonnyzzz.gradle.java9c.DependencyKind.Project
 import org.jonnyzzz.gradle.java9c.DependencyKind.Text
 import org.junit.Rule
 import org.junit.Test
@@ -150,27 +149,31 @@ class IntegrationTest {
   @Test
   fun test_java_clash_sources_lib_transitive() {
     toProject {
-      fileWriter("src/main/java/org/junit/X.java") {
+      fileWriter("problem/src/main/java/org/junit/X.java") {
         -"package org.junit;"
         -""
         -"class X {}"
       }
 
+      fileWriter("junit-setup/src/main/java/org/junit/Y.java") {
+        -"package org.junit;"
+        -""
+        -"class Y {}"
+      }
+
       allprojects {
         `apply plugin`("java")
+        `apply plugin`("org.jonnyzzz.java9c")
 
         repositories {
           mavenCentral()
         }
       }
 
-      dependencies {
-        compile(Project(":junit-setup"))
-      }
-
 
       fileWriter("settings.gradle") {
         -"include ':junit-setup'"
+        -"include ':problem'"
       }
 
       gradle("junit-setup/build.gradle") {
@@ -179,7 +182,13 @@ class IntegrationTest {
         }
       }
 
-    }.withArguments("java9c", "--stacktrace", "--info").withDebug(true).forwardOutput().build()
+      gradle("problem/build.gradle") {
+        dependencies {
+          compile(DependencyKind.Project(":junit-setup"))
+        }
+      }
+
+    }.withArguments(":problem:java9c", "--stacktrace", "--info").withDebug(true).forwardOutput().build()
   }
 
   @Test
