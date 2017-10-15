@@ -11,10 +11,6 @@ data class Package(val name : String) : Comparable<Package> {
   override fun compareTo(other: Package) = this.name.compareTo(other.name)
 }
 
-data class ClasspathEntry(val name: String) : Comparable<Package> {
-  override fun compareTo(other: Package) = this.name.compareTo(other.name)
-}
-
 fun listAppPackagesFromFile(root: File): Set<Package> {
   if (!root.isDirectory) return emptySet()
 
@@ -43,21 +39,9 @@ fun listAppPackagesFromJar(root: File): Set<Package> {
 }
 
 fun scanPackages(project: Project,
-                 fileSet: FileCollection): Map<Package, List<ClasspathEntry>> {
+                 fileSet: FileCollection) =
+        Resolver().fileCollectionResolver(project, fileSet).flatMap {
+          val file = it.key
+          (listAppPackagesFromFile(file) + listAppPackagesFromJar(file)).map { p -> p to it.value }
+        }.groupBy(keySelector = { it.first }, valueTransform = { it.second })
 
-  val projectBuildDir = project.buildDir
-  return fileSet.toSet()
-          .flatMap { file ->
-
-            //TODO: resolve entries to human readable things
-            val entry =
-                    if (file.absolutePath.startsWith(projectBuildDir.absolutePath)) {
-                      ClasspathEntry("project: ${project.path}")
-                    } else {
-                      ClasspathEntry(file.path)
-                    }
-
-            (listAppPackagesFromFile(file) + listAppPackagesFromJar(file)).map { it to entry }
-          }
-          .groupBy(keySelector = { it.first }, valueTransform = { it.second })
-}
