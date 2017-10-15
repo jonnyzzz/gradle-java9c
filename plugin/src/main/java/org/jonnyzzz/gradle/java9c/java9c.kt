@@ -3,11 +3,11 @@ package org.jonnyzzz.gradle.java9c
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
 
 
@@ -26,7 +26,7 @@ open class GradlePlugin : Plugin<Project> {
 
     project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.all { set ->
       project.tasks.create("java9c_${set.name}", ScanClasspathTask::class.java) { scanTask ->
-        scanTask.classpath = { set.runtimeClasspath }
+        scanTask.sourceSet = set
         scanTask.dependsOn(project.tasks.getByName(set.classesTaskName))
         scanTask.ext = ext
 
@@ -39,19 +39,14 @@ open class GradlePlugin : Plugin<Project> {
 open class ScanClasspathTask : DefaultTask() {
   @Internal
   @InputFiles
-  lateinit var classpath: () -> FileCollection?
+  lateinit var sourceSet: SourceSet
 
   @Internal
   lateinit var ext: Java9cSettings
 
   @TaskAction
   open fun `execute java9c task`() {
-    val fileSet = classpath()
-
-    if (fileSet == null) {
-      logger.debug("Fileset is `null`. Skipping task execution")
-      return
-    }
+    val fileSet = sourceSet.runtimeClasspath
 
     val packagesToEntries = scanPackages(project, fileSet)
     if (logger.isDebugEnabled) {
