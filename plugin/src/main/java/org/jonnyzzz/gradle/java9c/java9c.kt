@@ -46,9 +46,7 @@ open class ScanClasspathTask : DefaultTask() {
 
   @TaskAction
   open fun `execute java9c task`() {
-    val fileSet = sourceSet.runtimeClasspath
-
-    val packagesToEntries = scanPackages(project, fileSet)
+    val packagesToEntries = scanPackages(project, sourceSet)
     if (logger.isDebugEnabled) {
       packagesToEntries.toSortedMap().forEach { (k,vs) ->
         vs.forEach { v ->

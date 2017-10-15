@@ -1,7 +1,7 @@
 package org.jonnyzzz.gradle.java9c
 
 import org.gradle.api.Project
-import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.SourceSet
 import java.io.File
 import java.nio.file.Files
 import java.util.jar.JarFile
@@ -39,8 +39,8 @@ fun listAppPackagesFromJar(root: File): Set<Package> {
 }
 
 fun scanPackages(project: Project,
-                 fileSet: FileCollection) =
-        Resolver().fileCollectionResolver(project, fileSet).flatMap {
+                 sourceSet: SourceSet) =
+        Resolver().fileCollectionResolver(project, sourceSet).flatMap {
           val file = it.key
           (listAppPackagesFromFile(file) + listAppPackagesFromJar(file)).map { p -> p to it.value }
         }.groupBy(keySelector = { it.first }, valueTransform = { it.second })
