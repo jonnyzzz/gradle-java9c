@@ -15,9 +15,9 @@ import kotlin.collections.HashSet
 data class ClasspathEntry
 private constructor(
         val name: String
-) : Comparable<Package> {
+) : Comparable<ClasspathEntry> {
 
-  override fun compareTo(other: Package) = this.name.compareTo(other.name)
+  override fun compareTo(other: ClasspathEntry) = this.name.compareTo(other.name)
 
   companion object {
     private fun projectName(project: Project) = if (project == project.rootProject)
