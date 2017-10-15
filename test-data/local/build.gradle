@@ -1,6 +1,20 @@
-plugins {
- id 'org.jonnyzzz.java9c' version '0.1'
+buildscript {
+  repositories {
+    mavenCentral()
+    mavenLocal()
+  }
+
+  dependencies {
+    classpath 'org.jonnyzzz:java9c:1.0-SNAPSHOT'
+  }
+
 }
+
+
+println(System.getProperty("java.version"))
+
+apply plugin: 'org.jonnyzzz.java9c'
+
 
 apply plugin: 'java'
 repositories {
@@ -10,3 +24,4 @@ repositories {
 dependencies {
   compile 'junit:junit:4.12'
 }
+
