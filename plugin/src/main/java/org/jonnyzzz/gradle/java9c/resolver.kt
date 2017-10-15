@@ -25,7 +25,7 @@ private constructor(
     else
       project.path
 
-    fun fromProject(project: Project) = ClasspathEntry("project: ${projectName(project)}")
+    fun fromProject(project: Project) = ClasspathEntry("project ${projectName(project)}")
 
     fun fromDummyPath(file: File) = ClasspathEntry("file: $file")
 
