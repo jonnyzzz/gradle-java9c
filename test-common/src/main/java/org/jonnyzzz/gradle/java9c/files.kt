@@ -130,6 +130,14 @@ fun GradleWriter.subprojects(builder : GradleWriter.() -> Unit) = block("subproj
   object: GradleWriter, LineWriter by it {}
 }, builder)
 
+interface Java9cConfig : LineWriter
+fun GradleWriter.java9c(builder: Java9cConfig.() -> Unit) =
+        block("java9c", {
+          object : Java9cConfig, LineWriter by it {
+          }
+        }, builder)
+
+fun Java9cConfig.noFail() = -"failOnCollision = false"
 
 fun GradleWriter.`apply plugin`(id: String) { -"apply plugin: '${id}'"}
 

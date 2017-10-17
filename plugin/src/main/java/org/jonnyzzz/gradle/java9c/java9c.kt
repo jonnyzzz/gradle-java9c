@@ -3,16 +3,26 @@ package org.jonnyzzz.gradle.java9c
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
+import java.util.regex.Pattern
 
 
 open class Java9cSettings {
+  /**
+   * Should the `java9c` task fail on error or not
+   **/
+  var failOnCollision = true
 
+  /**
+   * Java Pattern to filter sources set names to be checked
+   **/
+  var sourceSetNameFilter = ".*"
 }
 
 open class GradlePlugin : Plugin<Project> {
@@ -24,16 +34,29 @@ open class GradlePlugin : Plugin<Project> {
     val ext = project.extensions.create("java9c", Java9cSettings::class.java)
     val rootTask = project.tasks.create("java9c")
 
+    val pattern = Pattern.compile(ext.sourceSetNameFilter)
+
     project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.all { set ->
-      project.tasks.create("java9c_${set.name}", ScanClasspathTask::class.java) { scanTask ->
+      if (!pattern.matcher(set.name).matches()) {
+        logger.debug("Source set ${set.name} is ignored by pattern")
+        return@all
+      }
+
+      val task = project.tasks.create("java9c_${set.name}", ScanClasspathTask::class.java) { scanTask ->
         scanTask.sourceSet = set
         scanTask.dependsOn(project.tasks.getByName(set.classesTaskName))
+        scanTask.dependsOn(project.configurations.getByName(set.runtimeConfigurationName))
+        scanTask.dependsOn(project.configurations.getByName(set.runtimeClasspathConfigurationName))
         scanTask.ext = ext
 
         rootTask.dependsOn(scanTask)
       }
+
+      logger.debug("Task ${task.name} was created for the source set ${set.name}")
     }
   }
+
+  private val logger = Logging.getLogger(GradlePlugin::class.java)
 }
 
 open class ScanClasspathTask : DefaultTask() {
@@ -48,7 +71,7 @@ open class ScanClasspathTask : DefaultTask() {
   open fun `execute java9c task`() {
     val packagesToEntries = scanPackages(project, sourceSet)
     if (logger.isDebugEnabled) {
-      packagesToEntries.toSortedMap().forEach { (k,vs) ->
+      packagesToEntries.toSortedMap().forEach { (k, vs) ->
         vs.forEach { v ->
           logger.debug("${k.name} -> ${v.name}")
         }
@@ -61,19 +84,11 @@ open class ScanClasspathTask : DefaultTask() {
       return
     }
 
-    logger.error("  ")
-    logger.error("The following packages are defined in several modules:")
-    for ((k,vs) in problems) {
-      logger.error("  ")
-      logger.error("Package '${k.name}' is declared in")
-      for (v in vs.toSortedSet()) {
-        logger.error("  - ${v.name}")
-      }
-      logger.error("  ")
-    }
-    logger.error("  ")
+    report(problems, {logger.error(it)})
 
-    //TODO: what is the best way to report error?
-    throw Exception("Package collisions were detected")
+    if (ext.failOnCollision) {
+      //TODO: what is the best way to report error?
+      throw Exception("Package collisions were detected")
+    }
   }
 }

@@ -1,9 +1,7 @@
 package org.jonnyzzz.gradle.java9c
 
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.result.ResolvedArtifactResult
-import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.SourceSet
 import java.io.File
@@ -49,18 +47,11 @@ class ResolverContext(
         val project: Project,
         val sourceSet: SourceSet
 ) {
-  private val allEntries = TreeSet(fileSet.toSet().filter { it.exists() })
+  val allEntries = TreeSet<File>()
   private val resolvedEntries = TreeMap<File, ClasspathEntry>()
 
   val rootProject : Project
     get() = project.rootProject
-
-  val fileSet: FileCollection
-    get() = sourceSet.runtimeClasspath
-
-  val configuration : Configuration
-    get() = project.configurations.getByName(sourceSet.runtimeConfigurationName)
-
 
   fun resolveEntry(path: File, entry : ClasspathEntry) {
     if (allEntries.contains(path)) {
@@ -85,6 +76,11 @@ class ResolverContext(
 class Resolver {
   fun fileCollectionResolver(project: Project, sourceSet: SourceSet) : Map<File, ClasspathEntry> {
     val ctx = ResolverContext(project, sourceSet)
+
+    tryAndHandle {
+      //setup default set of artifacts to scan
+      ctx.allEntries += ctx.sourceSet.runtimeClasspath.toSet().filter { it.exists() }
+    }
 
     tryAndHandle {
       //current source set contains many output directories (e.g. if java, kotlin are used, or resources)
@@ -151,14 +147,28 @@ class ResolveProjectsFromFilesHack {
 class ResolveConfigurationIncomingDependencies {
   fun resolve(ctx: ResolverContext) = ctx.run {
     val toResolve = unresolvedEntries
-    for (artifact in configuration.incoming.artifacts) {
-      val file = artifact.file
-      if (toResolve.contains(file)) {
-        resolveEntry(
-                file,
-                ClasspathEntry.fromResolvedArtifact(artifact))
+
+    sequenceOf(
+            sourceSet.compileClasspathConfigurationName,
+            sourceSet.runtimeClasspathConfigurationName,
+
+            sourceSet.apiConfigurationName,
+            sourceSet.implementationConfigurationName
+    ).mapNotNull {
+      try {
+        project.configurations.findByName(it)
+      } catch (t: Throwable) {
+        Logging.getLogger(javaClass).debug("Failed to resolve configuration $it. ${t.message}", t)
+        null
       }
     }
+            .flatMap { it.incoming.artifacts.asSequence() }
+            .filter { toResolve.contains(it.file) }
+            .forEach {
+              resolveEntry(
+                      it.file,
+                      ClasspathEntry.fromResolvedArtifact(it))
+            }
   }
 }
 

@@ -1,7 +1,9 @@
 package org.jonnyzzz.gradle.java9c
 
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.jonnyzzz.gradle.java9c.DependencyKind.Text
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -97,7 +99,13 @@ class IntegrationTest {
         compile(project(":a") )
         compile(project(":b") )
       }
-    }.withArguments("java9c", "--stacktrace").forwardOutput().build()
+
+      java9c{ noFail() }
+    }.withArguments("java9c", "--stacktrace").forwardOutput().build().assertContains {
+      -"Package 'org.foo' is declared in"
+      -"  - a.jar (project :a)"
+      -"  - b.jar (project :b)"
+    }
   }
 
   @Test
@@ -129,7 +137,14 @@ class IntegrationTest {
         api(project(":a") )
         implementation(project(":b") )
       }
-    }.withArguments("java9c", "--stacktrace").forwardOutput().build()
+
+      java9c { noFail() }
+
+    }.withArguments("java9c").withDebug(true).forwardOutput().build().assertContains {
+      -"Package 'org.foo' is declared in"
+      -"  - a.jar (project :a)"
+      -"  - b.jar (project :b)"
+    }
   }
 
   @Test
@@ -150,7 +165,15 @@ class IntegrationTest {
       dependencies {
         compile(Text("junit:junit:4.12"))
       }
+
+      java9c { noFail() }
+      
     }.withArguments("java9c", "--stacktrace", "--info").forwardOutput().build()
+            .assertContains {
+                      -"Package 'org.junit' is declared in"
+                      -"  - junit.jar (junit:junit:4.12)"
+                      -"  - project <root>"
+            }
   }
 
   @Test
@@ -193,30 +216,57 @@ class IntegrationTest {
         dependencies {
           compile(DependencyKind.Project(":junit-setup"))
         }
-      }
 
-    }.withArguments(":problem:java9c", "--stacktrace", "--info").withDebug(true).forwardOutput().build()
+        java9c { noFail() }
+      }
+      
+    }.withArguments(":problem:java9c").withDebug(true).forwardOutput().build()
+            .assertContains {
+              -"Package 'org.junit' is declared in"
+              -"  - junit-setup.jar (project :junit-setup)"
+              -"  - junit.jar (junit:junit:4.12)"
+              -"  - project :problem"
+            }
+  }
+
+  private fun BuildGradleWriter.setup_javalibrary_clash_sources_lib() {
+    fileWriter("src/main/java/org/junit/X.java") {
+      -"package org.junit;"
+      -""
+      -"class X {}"
+    }
+
+    `apply plugin`("java-library")
+
+    repositories {
+      mavenCentral()
+    }
+
+    dependencies {
+      implementation(Text("junit:junit:4.12"))
+    }
   }
 
   @Test
   fun test_javalibrary_clash_sources_lib() {
     toProject {
-      fileWriter("src/main/java/org/junit/X.java") {
-        -"package org.junit;"
-        -""
-        -"class X {}"
-      }
+      setup_javalibrary_clash_sources_lib()
 
-      `apply plugin`("java-library")
+      java9c { noFail() }
 
-      repositories {
-        mavenCentral()
-      }
+    }.withArguments("java9c", "--stacktrace").withDebug(true).forwardOutput().build()
+            .assertContains {
+              -"Package 'org.junit' is declared in"
+              -"  - junit.jar (junit:junit:4.12)"
+              -"  - project <root>"
+            }
+  }
 
-      dependencies {
-        implementation(Text("junit:junit:4.12"))
-      }
-    }.withArguments("java9c", "--stacktrace").forwardOutput().build()
+  @Test(expected = Throwable::class)
+  fun test_javalibrary_clash_sources_lib_fails() {
+    toProject {
+      setup_javalibrary_clash_sources_lib()
+    }.withArguments("java9c", "--stacktrace").withDebug(true).forwardOutput().build()
   }
 
   @Test
@@ -248,5 +298,21 @@ class IntegrationTest {
         implementation(Text("org.jetbrains.kotlin:kotlin-stdlib:1.1.51"))
       }
     }.withArguments("java9c", "--stacktrace").withDebug(true).forwardOutput().build()
+  }
+
+  private fun BuildResult.assertContains(builder : LineWriter.() -> Unit) = apply {
+    val lines = output.split(Regex("[\r\n]+")).map { it.trim() }
+    val goldLines = mutableListOf<String>()
+    val goldLinesText = buildString {
+      object : LineWriter {
+        override fun String.unaryMinus() {
+          goldLines += this.trim()
+          appendln(this)
+        }
+      }.builder()
+    }
+
+    if (lines.containsAll(goldLines)) return@apply
+    Assert.assertEquals(output, goldLinesText)
   }
 }
