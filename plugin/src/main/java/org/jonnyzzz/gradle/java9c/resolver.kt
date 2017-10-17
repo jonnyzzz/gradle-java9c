@@ -87,6 +87,12 @@ class Resolver {
     val ctx = ResolverContext(project, sourceSet)
 
     tryAndHandle {
+      //current source set contains many output directories (e.g. if java, kotlin are used, or resources)
+      //merging them together first
+      ResolveSourceSetOutput().resolve(ctx)
+    }
+
+    tryAndHandle {
       //check incomeing dependencies first
       ResolveConfigurationIncomingDependencies().resolve(ctx)
     }
@@ -144,12 +150,24 @@ class ResolveProjectsFromFilesHack {
 
 class ResolveConfigurationIncomingDependencies {
   fun resolve(ctx: ResolverContext) = ctx.run {
+    val toResolve = unresolvedEntries
     for (artifact in configuration.incoming.artifacts) {
-      resolveEntry(
-              artifact.file,
-              ClasspathEntry.fromResolvedArtifact(artifact))
+      val file = artifact.file
+      if (toResolve.contains(file)) {
+        resolveEntry(
+                file,
+                ClasspathEntry.fromResolvedArtifact(artifact))
+      }
+    }
+  }
+}
 
+class ResolveSourceSetOutput {
+  fun resolve(ctx: ResolverContext) = ctx.run {
+    val projectEntry = ClasspathEntry.fromProject(project)
 
+    sourceSet.output.forEach { dir ->
+      resolveEntry(dir, projectEntry)
     }
   }
 }
