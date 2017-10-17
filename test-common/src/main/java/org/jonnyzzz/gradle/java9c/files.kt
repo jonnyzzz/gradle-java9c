@@ -78,6 +78,8 @@ private fun DependenciesWriter._dep(name: String, vararg deps: DependencyKind) {
 
 fun DependenciesWriter.api(vararg deps: DependencyKind) = _dep("api", *deps)
 fun DependenciesWriter.implementation(vararg deps: DependencyKind) = _dep("implementation", *deps)
+fun DependenciesWriter.runtimeOnly(vararg deps: DependencyKind) = _dep("runtimeOnly", *deps)
+fun DependenciesWriter.compileOnly(vararg deps: DependencyKind) = _dep("compileOnly", *deps)
 fun DependenciesWriter.compile(vararg deps: DependencyKind) = _dep("compile", *deps)
 fun DependenciesWriter.testCompile(vararg deps: DependencyKind) = _dep("testCompile", *deps)
 fun DependenciesWriter.classpath(vararg deps: DependencyKind) = _dep("classpath", *deps)

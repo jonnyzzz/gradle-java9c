@@ -177,6 +177,57 @@ open class IntegrationTest_4_2_1 {
   }
 
   @Test
+  fun test_java_clash_sources_runtimeOnly_lib() {
+    toProject {
+      fileWriter("src/main/java/org/junit/X.java") {
+        -"package org.junit;"
+        -""
+        -"class X {}"
+      }
+
+      `apply plugin`("java")
+
+      repositories {
+        mavenCentral()
+      }
+
+      dependencies {
+        runtimeOnly(Text("junit:junit:4.12"))
+      }
+
+      java9c { noFail() }
+
+    }.withArguments("java9c", "--stacktrace", "--info").forwardOutput().build()
+            .assertContains {
+                      -"Package 'org.junit' is declared in"
+                      -"  - junit.jar (junit:junit:4.12)"
+                      -"  - project <root>"
+            }
+  }
+
+  @Test
+  fun test_java_clash_sources_compileOnly_lib() {
+    toProject {
+      fileWriter("src/main/java/org/junit/X.java") {
+        -"package org.junit;"
+        -""
+        -"class X {}"
+      }
+
+      `apply plugin`("java")
+
+      repositories {
+        mavenCentral()
+      }
+
+      dependencies {
+        compileOnly(Text("junit:junit:4.12"))
+      }
+
+    }.withArguments("java9c", "--stacktrace", "--info").forwardOutput().build()
+  }
+
+  @Test
   fun test_java_clash_sources_lib_transitive() {
     toProject {
       fileWriter("problem/src/main/java/org/junit/X.java") {
