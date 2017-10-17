@@ -46,6 +46,6 @@ fun scanPackages(project: Project,
         }.groupBy(keySelector = { it.first }, valueTransform = { it.second })
          .mapValues {
            //it is possible to have several classpath entries for the same logical unit, e.g. java and kotlin compiler outout dirs
-           it.value.toSet()
+           it.value.toSortedSet()
          }
 
