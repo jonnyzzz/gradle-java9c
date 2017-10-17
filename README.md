@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jonnyzzz/gradle-java9c.svg?branch=master)](https://travis-ci.org/jonnyzzz/gradle-java9c)
+
 Gradle Java9 Packages Collision plugin
 ======================================
 
