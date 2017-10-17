@@ -44,4 +44,8 @@ fun scanPackages(project: Project,
           val file = it.key
           (listAppPackagesFromFile(file) + listAppPackagesFromJar(file)).map { p -> p to it.value }
         }.groupBy(keySelector = { it.first }, valueTransform = { it.second })
+         .mapValues {
+           //it is possible to have several classpath entries for the same logical unit, e.g. java and kotlin compiler outout dirs
+           it.value.distinct()
+         }
 
