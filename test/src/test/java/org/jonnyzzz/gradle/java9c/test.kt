@@ -21,7 +21,9 @@ class IntegrationTest {
   @JvmField
   val temp = TemporaryFolder()
 
-  fun toProject(builder: BuildGradleWriter.() -> Unit): GradleRunner {
+  fun toProject(header: GradleWriter.() -> Unit = {},
+                buildScriptBuilder: GradleBuildScript.() -> Unit = {},
+                builder: BuildGradleWriter.() -> Unit): GradleRunner {
     val projectDir = temp.newFolder()
 
     fileWriter(projectDir) {
@@ -36,7 +38,12 @@ class IntegrationTest {
           dependencies {
             classpath(Text(pluginArtifact))
           }
+
+          buildScriptBuilder()
         }
+
+        header()
+
         -""
         -"println(System.getProperty(\"java.version\"))\n "
         `apply plugin`("org.jonnyzzz.java9c")
@@ -210,5 +217,36 @@ class IntegrationTest {
         implementation(Text("junit:junit:4.12"))
       }
     }.withArguments("java9c", "--stacktrace").forwardOutput().build()
+  }
+
+  @Test
+  fun test_java_kotlin() {
+    toProject (header = {
+      plugins {
+        id("org.jetbrains.kotlin.jvm", "1.1.51")
+      }
+    }) {
+      fileWriter("src/main/java/org/junit/X.java") {
+        -"package org.junit;"
+        -""
+        -"class X {}"
+      }
+
+      fileWriter("src/main/kotlin/org/junit/Y.kt") {
+        -"package org.junit"
+        -""
+        -"class Y {}"
+      }
+
+      `apply plugin`("java-library")
+
+      repositories {
+        mavenCentral()
+      }
+
+      dependencies {
+        implementation(Text("org.jetbrains.kotlin:kotlin-stdlib:1.1.51"))
+      }
+    }.withArguments("java9c", "--stacktrace").withDebug(true).forwardOutput().build()
   }
 }

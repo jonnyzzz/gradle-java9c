@@ -110,6 +110,18 @@ fun RepositoriesWriter.mavenCentral() { -"mavenCentral()" }
 fun RepositoriesWriter.mavenLocal() { -"mavenLocal()" }
 fun RepositoriesWriter.jcenter() { -"jcenter()" }
 
+
+interface PluginsWriter : LineWriter
+fun GradleWriter.plugins(builder: PluginsWriter.() -> Unit) =
+        block("plugins", {
+          object : PluginsWriter, LineWriter by it {
+          }
+        }, builder)
+
+fun PluginsWriter.id(name : String, version: String) {
+  -"id '$name' version '$version'"
+}
+
 fun GradleWriter.allprojects(builder : GradleWriter.() -> Unit) = block("allprojects", {
   object: GradleWriter, LineWriter by it {}
 }, builder)
