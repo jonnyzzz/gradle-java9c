@@ -9,9 +9,9 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 
-class IntegrationTest {
+open class IntegrationTest_4_2_1 {
 
-  val gradleVersion = "4.2.1"
+  open val gradleVersion = "4.2.1"
 
   private val pluginArtifact by lazy {
     val v = System.getProperty("jonnyzzz-plugin-artifact") ?: error("Failed to get version. Are you running via Gradle test task?")
