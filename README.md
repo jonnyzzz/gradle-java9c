@@ -22,6 +22,8 @@ Usage
 The plugin defines `java9c` task for the project. The task generates detected
 packages collisions for every SourceSet of the project.
 
+See more info on [Gradle Plugin Portal](https://plugins.gradle.org/plugin/org.jonnyzzz.java9c)
+
 Add the following lines to your project:
 ```gradle
 
@@ -42,6 +44,13 @@ Issues
 ======
 
 Please use GitHub issues from the project to report problems you have. Pull requests are welcome too.
+
+Related Links
+=============
+
+[Gradle Plugin Portal](https://plugins.gradle.org/plugin/org.jonnyzzz.java9c)
+
+[Introductory Blog Post](https://jonnyzzz.com/blog/2017/10/18/java9c)
 
 
 
