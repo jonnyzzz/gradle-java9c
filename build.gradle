@@ -11,7 +11,7 @@ buildscript {
 }
 
 plugins {
-  id "com.gradle.plugin-publish" version "0.9.8" apply false
+  id "com.gradle.plugin-publish" version "0.9.9" apply false
 }
 
 group 'org.jonnyzzz'
