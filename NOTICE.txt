@@ -1,3 +1,0 @@
-This library was built on top of the package created by
-https://github.com/szhem/log4j-json-layout
-which is licensed under Apache 2.0
