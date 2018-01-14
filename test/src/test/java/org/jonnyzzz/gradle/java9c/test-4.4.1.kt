@@ -4,6 +4,7 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.jonnyzzz.gradle.java9c.DependencyKind.Text
 import org.junit.Assert
+import org.junit.Assume
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -321,6 +322,49 @@ open class IntegrationTest_4_4_1 {
   }
 
   @Test
+  open fun test_java9_module_info() {
+    assumeJava9()
+
+    toProject{
+      fileWriter("settings.gradle") {
+        -"include ':a', ':b'"
+      }
+
+      gradle("a/build.gradle") {
+        plugins {
+          id("org.gradle.java.experimental-jigsaw", "0.1.1")
+        }
+
+        fileWriter("a/src/main/java/module-info.java") {
+          -"module jonnyzzz.A {"
+          -""
+          -"}"
+        }
+      }
+
+      gradle("b/build.gradle") {
+        plugins {
+          id("org.gradle.java.experimental-jigsaw", "0.1.1")
+        }
+
+        `apply plugin`("org.jonnyzzz.java9c")
+
+        dependencies {
+          -"compile project(path: ':a', configuration: 'archives')"
+        }
+
+        java9c { noFail() }
+
+        fileWriter("b/src/main/java/module-info.java") {
+          -"module jonnyzzz.test {"
+          -""
+          -"}"
+        }
+      }
+    }.withArguments(":b:java9c", "--stacktrace").withDebug(true).forwardOutput().build()
+  }
+
+  @Test
   fun test_java_kotlin() {
     toProject (header = {
       plugins {
@@ -365,5 +409,11 @@ open class IntegrationTest_4_4_1 {
 
     if (lines.containsAll(goldLines)) return@apply
     Assert.assertEquals(output, goldLinesText)
+  }
+
+  private fun assumeJava9() {
+    val javaVersion = System.getProperty("java.version")
+    println("java version: $javaVersion")
+    Assume.assumeTrue(!javaVersion.startsWith("1.8"))
   }
 }
