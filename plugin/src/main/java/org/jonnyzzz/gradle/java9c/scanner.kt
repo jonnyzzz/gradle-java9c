@@ -31,7 +31,13 @@ fun listAppPackagesFromJar(root: File): Set<Package> {
     jar.entries().asSequence()
             .filter { !it.isDirectory }
             .filter { it.name.endsWith(".class") }
-            .map { it.name.substring(0, it.name.lastIndexOf('/')) }
+            .map {
+              val lastSlash = it.name.lastIndexOf('/')
+              if (lastSlash >= 0)
+                it.name.substring(0, lastSlash)
+              else
+                ""
+            }
             .map { it.replace('/', '.') }
             .map { Package(it) }
             .toSortedSet()

@@ -92,6 +92,41 @@ class ScannerTest {
     Assert.assertEquals("org.jonnyzzz", packages.single().name)
   }
 
+  @Test
+  fun scanDirWithRootClassses() {
+    val file = temp.newFolder("boo")
+
+    File(file, "foo.class").apply {
+      parentFile?.mkdirs()
+      writeText("CAFEBABE_MOCK")
+    }
+    File(file, "module-info.class").apply {
+      parentFile?.mkdirs()
+      writeText("CAFEBABE_MOCK")
+    }
+
+    val packages = listAppPackagesFromFile(file)
+    println(packages)
+    Assert.assertEquals("", packages.single().name)
+  }
+
+  @Test
+  fun scanDirWithRootJar() {
+    val file = temp.newFile("boo.jar")
+
+    JarOutputStream(file.outputStream()).use { jar ->
+      jar.putNextEntry(JarEntry("foo.class"))
+      jar.write("COFEBABE_MOCK".toByteArray())
+
+      jar.putNextEntry(JarEntry("foo.anything"))
+      jar.write("COFEBABE_MOCK".toByteArray())
+    }
+
+    val packages = listAppPackagesFromJar(file)
+    println(packages)
+    Assert.assertEquals("", packages.single().name)
+  }
+
   @Rule
   @JvmField
   val temp = TemporaryFolder()
