@@ -18,6 +18,7 @@ fun listAppPackagesFromFile(root: File): Set<Package> {
   return Files.walk(rootPath)
           .asSequence()
           .filter { it.toFile().path.endsWith(".class") }
+          .filterNot { it.toFile() == File(rootPath.toFile(), "module-info.class") }
           .map { rootPath.relativize(it.parent).toFile().path }
           .map { it.replace('/', '.') }
           .map { Package(it) }
@@ -31,6 +32,7 @@ fun listAppPackagesFromJar(root: File): Set<Package> {
     jar.entries().asSequence()
             .filter { !it.isDirectory }
             .filter { it.name.endsWith(".class") }
+            .filterNot { it.name == "module-info.class" }
             .map {
               val lastSlash = it.name.lastIndexOf('/')
               if (lastSlash >= 0)

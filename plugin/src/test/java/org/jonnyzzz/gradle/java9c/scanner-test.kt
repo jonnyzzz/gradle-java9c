@@ -127,6 +127,42 @@ class ScannerTest {
     Assert.assertEquals("", packages.single().name)
   }
 
+  @Test
+  fun scanDirIgnoreModuleInfoJava() {
+    val file = temp.newFolder("boo")
+
+    File(file, "module-info.class").apply {
+      parentFile?.mkdirs()
+      writeText("CAFEBABE_MOCK")
+    }
+
+    File(file, "another.trash").apply {
+      parentFile?.mkdirs()
+      writeText("CAFEBABE_MOCK")
+    }
+
+    val packages = listAppPackagesFromFile(file)
+    println(packages)
+    Assert.assertTrue(packages.isEmpty())
+  }
+
+  @Test
+  fun scanJarIgnoreModuleInfoJava() {
+    val file = temp.newFile("boo.jar")
+
+    JarOutputStream(file.outputStream()).use { jar ->
+      jar.putNextEntry(JarEntry("module-info.class"))
+      jar.write("COFEBABE_MOCK".toByteArray())
+
+      jar.putNextEntry(JarEntry("foo.anything"))
+      jar.write("COFEBABE_MOCK".toByteArray())
+    }
+
+    val packages = listAppPackagesFromJar(file)
+    println(packages)
+    Assert.assertTrue(packages.isEmpty())
+  }
+
   @Rule
   @JvmField
   val temp = TemporaryFolder()
