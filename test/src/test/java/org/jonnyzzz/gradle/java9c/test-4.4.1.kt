@@ -408,10 +408,16 @@ open class IntegrationTest_4_4_1 {
     if (lines.containsAll(goldLines)) return@apply
     Assert.assertEquals(output, goldLinesText)
   }
+}
 
-  private fun assumeJava9() {
-    val javaVersion = System.getProperty("java.version")
-    println("java version: $javaVersion")
-    Assume.assumeTrue(!javaVersion.startsWith("1.8"))
-  }
+fun assumeJava9() {
+  val javaVersion = System.getProperty("java.version")
+  println("java version: $javaVersion")
+  Assume.assumeFalse(javaVersion.startsWith("1.8"))
+}
+
+fun assumeJava8() {
+  val javaVersion = System.getProperty("java.version")
+  println("java version: $javaVersion")
+  Assume.assumeTrue(javaVersion.startsWith("1.8"))
 }
