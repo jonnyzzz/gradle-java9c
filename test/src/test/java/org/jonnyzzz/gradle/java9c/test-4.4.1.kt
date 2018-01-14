@@ -353,8 +353,6 @@ open class IntegrationTest_4_4_1 {
           -"compile project(path: ':a', configuration: 'archives')"
         }
 
-        java9c { noFail() }
-
         fileWriter("b/src/main/java/module-info.java") {
           -"module jonnyzzz.test {"
           -""
