@@ -5,6 +5,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.jonnyzzz.gradle.java9c.DependencyKind.Text
 import org.junit.Assert
 import org.junit.Assume
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -390,6 +391,20 @@ open class IntegrationTest_4_4_1 {
       dependencies {
         implementation(Text("org.jetbrains.kotlin:kotlin-stdlib:1.1.51"))
       }
+    }.withArguments("java9c", "--stacktrace").withDebug(true).forwardOutput().build()
+  }
+
+  @Test
+  @Ignore
+  fun test_properties_plugin() {
+    toProject(header = {
+      plugins {
+        id("net.saliman.properties", "1.4.6")
+    }}) {
+      setup_javalibrary_clash_sources_lib()
+
+      java9c { noFail() }
+
     }.withArguments("java9c", "--stacktrace").withDebug(true).forwardOutput().build()
   }
 
