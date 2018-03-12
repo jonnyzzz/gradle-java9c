@@ -44,10 +44,11 @@ open class GradlePlugin : Plugin<Project> {
 
       val task = project.tasks.create("java9c_${set.name}", ScanClasspathTask::class.java) { scanTask ->
         scanTask.sourceSet = set
+        scanTask.settings = ext
+
         scanTask.dependsOn(project.tasks.getByName(set.classesTaskName))
         scanTask.dependsOn(project.configurations.getByName(set.runtimeConfigurationName))
         scanTask.dependsOn(project.configurations.getByName(set.runtimeClasspathConfigurationName))
-        scanTask.ext = ext
 
         rootTask.dependsOn(scanTask)
       }
@@ -65,7 +66,7 @@ open class ScanClasspathTask : DefaultTask() {
   lateinit var sourceSet: SourceSet
 
   @Internal
-  lateinit var ext: Java9cSettings
+  lateinit var settings: Java9cSettings
 
   @TaskAction
   open fun `execute java9c task`() {
@@ -86,7 +87,7 @@ open class ScanClasspathTask : DefaultTask() {
 
     report(problems, {logger.error(it)})
 
-    if (ext.failOnCollision) {
+    if (settings.failOnCollision) {
       //TODO: what is the best way to report error?
       throw Exception("Package collisions were detected")
     }

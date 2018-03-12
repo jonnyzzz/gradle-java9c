@@ -395,7 +395,6 @@ open class IntegrationTest_4_4_1 {
   }
 
   @Test
-  @Ignore
   fun test_properties_plugin() {
     toProject(header = {
       plugins {
