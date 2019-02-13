@@ -1,4 +1,6 @@
 language: java
+script:
+- ./gradlew --scan build
 jdk:
   - oraclejdk8
   - oraclejdk9

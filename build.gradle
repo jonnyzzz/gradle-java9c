@@ -11,7 +11,13 @@ buildscript {
 }
 
 plugins {
+  id "com.gradle.build-scan" version "1.16"
   id "com.gradle.plugin-publish" version "0.9.9" apply false
+}
+
+buildScan {
+    termsOfServiceUrl = "https://gradle.com/terms-of-service"
+    termsOfServiceAgree = "yes"
 }
 
 group 'org.jonnyzzz'
